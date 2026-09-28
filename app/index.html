@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7f4">
+    <meta name="description" content="A clear, contributor-friendly view of project status, ownership, activity, and priority.">
+    <title>Project Pulse</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to projects</a>
+
+    <header class="site-header">
+      <a class="brand" href="#main-content" aria-label="Project Pulse home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" focusable="false">
+            <path d="M5 17h6l3-8 5 15 3-7h5" />
+          </svg>
+        </span>
+        <span class="brand-name">Project <span>Pulse</span></span>
+      </a>
+      <p class="header-note"><span class="live-dot" aria-hidden="true"></span> Your team's work, at a glance</p>
+    </header>
+
+    <main id="main-content" class="dashboard">
+      <section class="dashboard-intro" aria-labelledby="page-title">
+        <p class="eyebrow">TEAM OVERVIEW</p>
+        <div class="intro-layout">
+          <div>
+            <h1 id="page-title">Good work, in motion.</h1>
+            <p class="intro-copy">A shared view of what's moving, who's making it happen, and where a little help can go a long way.</p>
+          </div>
+          <div class="overview-note">
+            <span class="overview-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M4 17.5 9.2 12l3.5 3.5L20 7.8M14.8 7.8H20v5.2" />
+              </svg>
+            </span>
+            <span><strong>Keep the momentum</strong><br>Small updates help everyone stay in sync.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="projects-section" aria-labelledby="projects-heading">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">THE PORTFOLIO</p>
+            <h2 id="projects-heading">Projects</h2>
+          </div>
+          <p class="section-hint">Status, ownership, and the latest pulse</p>
+        </div>
+
+        <p id="project-state" class="dashboard-footnote" role="status" aria-live="polite">Loading projects…</p>
+        <ul class="project-list" data-project-data="project-data.json" aria-label="Project overview" aria-busy="true"></ul>
+
+        <p class="dashboard-footnote">Project updates make it easier for everyone to lend a hand.</p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span class="footer-mark" aria-hidden="true">P</span>
+      <p>Built for the people moving projects forward.</p>
+    </footer>
+    <script>
+      const projectList = document.querySelector(".project-list");
+      const projectState = document.querySelector("#project-state");
+
+      function createElement(tagName, className, text) {
+        const element = document.createElement(tagName);
+        if (className) element.className = className;
+        if (text !== undefined) element.textContent = text;
+        return element;
+      }
+
+      function initials(name) {
+        return name
+          .trim()
+          .split(/\s+/)
+          .slice(0, 2)
+          .map((part) => part[0].toUpperCase())
+          .join("");
+      }
+
+      function toSlug(value) {
+        return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      }
+
+      function detailRow(label, value, className, decoration) {
+        const row = createElement("div", "detail-row");
+        const term = createElement("dt", "", label);
+        const description = createElement("dd");
+
+        if (decoration) description.append(decoration);
+        const valueElement = createElement("span", className || "", value);
+        description.append(valueElement);
+        row.append(term, description);
+        return row;
+      }
+
+      function createActivityIcon() {
+        const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        icon.setAttribute("viewBox", "0 0 20 20");
+        icon.setAttribute("focusable", "false");
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", "M10 5v5l3.2 2M17 10a7 7 0 1 1-2.05-4.95M17 4v4h-4");
+        icon.append(path);
+        return icon;
+      }
+
+      function renderProject(project, index) {
+        const item = createElement("li");
+        const card = createElement("article", "project-card");
+        const titleId = `project-title-${index + 1}`;
+        card.setAttribute("aria-labelledby", titleId);
+
+        const topline = createElement("div", "card-topline");
+        topline.append(createElement("span", "project-kicker", "PROJECT"));
+        const status = createElement("span", `status-badge status-${toSlug(project.status)}`);
+        status.append(createElement("span", "status-dot"));
+        status.firstElementChild.setAttribute("aria-hidden", "true");
+        status.append(document.createTextNode(project.status));
+        topline.append(status);
+
+        const title = createElement("h3", "project-name", project.name);
+        title.id = titleId;
+        const summary = createElement("p", "project-summary", project.summary);
+
+        const details = createElement("dl", "project-details");
+        const avatarClasses = ["", "avatar-lilac", "avatar-peach"];
+        const avatar = createElement("span", `owner-avatar ${avatarClasses[index % avatarClasses.length]}`.trim(), initials(project.owner));
+        avatar.setAttribute("aria-hidden", "true");
+        details.append(
+          detailRow("Owner", project.owner, "", avatar),
+          detailRow("Priority", project.priority, "priority-label",
+            createElement("span", `priority-indicator priority-${toSlug(project.priority)}`))
+        );
+        details.lastElementChild.querySelector(".priority-indicator").setAttribute("aria-hidden", "true");
+
+        const activity = createElement("div", "recent-activity");
+        const activityIcon = createElement("span", "activity-icon");
+        activityIcon.setAttribute("aria-hidden", "true");
+        activityIcon.append(createActivityIcon());
+        const activityText = createElement("p");
+        activityText.append(
+          createElement("span", "activity-label", "RECENT ACTIVITY"),
+          document.createElement("br"),
+          document.createTextNode(project.recentActivity)
+        );
+        activity.append(activityIcon, activityText);
+        card.append(topline, title, summary, details, activity);
+        item.append(card);
+        return item;
+      }
+
+      function readProjectText(project, field, index) {
+        const value = project[field];
+        if (typeof value !== "string" || !value.trim()) {
+          throw new Error(`Project ${index + 1} must include a non-empty "${field}" value.`);
+        }
+        return value.trim();
+      }
+
+      function showState(message, role) {
+        projectState.textContent = message;
+        projectState.hidden = false;
+        projectState.setAttribute("role", role);
+        projectState.setAttribute("aria-live", role === "alert" ? "assertive" : "polite");
+      }
+
+      async function loadProjects() {
+        try {
+          const response = await fetch(projectList.dataset.projectData);
+          if (!response.ok) {
+            throw new Error(`The project data request failed with status ${response.status}.`);
+          }
+
+          const data = await response.json();
+          if (!data || typeof data !== "object" || !Array.isArray(data.projects)) {
+            throw new Error('The project data must contain a top-level "projects" array.');
+          }
+
+          const projects = data.projects.map((project, index) => {
+            if (!project || typeof project !== "object" || Array.isArray(project)) {
+              throw new Error(`Project ${index + 1} must be an object.`);
+            }
+            return {
+              name: readProjectText(project, "name", index),
+              owner: readProjectText(project, "owner", index),
+              status: readProjectText(project, "status", index),
+              recentActivity: readProjectText(project, "recentActivity", index),
+              priority: readProjectText(project, "priority", index),
+              summary: readProjectText(project, "summary", index)
+            };
+          });
+
+          projectList.setAttribute("aria-busy", "false");
+          if (projects.length === 0) {
+            showState("No projects are available yet.", "status");
+            return;
+          }
+
+          projectList.replaceChildren(...projects.map(renderProject));
+          projectState.hidden = true;
+        } catch (error) {
+          projectList.setAttribute("aria-busy", "false");
+          const message = error instanceof Error ? error.message : String(error);
+          showState(`Unable to load projects: ${message}`, "alert");
+        }
+      }
+
+      loadProjects();
+    </script>
+  </body>
+</html>

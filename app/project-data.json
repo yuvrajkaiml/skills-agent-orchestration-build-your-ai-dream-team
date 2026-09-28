@@ -1,0 +1,28 @@
+{
+  "projects": [
+    {
+      "name": "Atlas onboarding",
+      "owner": "Jordan Lee",
+      "status": "In progress",
+      "recentActivity": "Shared a draft of the welcome flow",
+      "priority": "High",
+      "summary": "Making the first steps feel simple, welcoming, and useful for every new customer."
+    },
+    {
+      "name": "Fieldnotes research",
+      "owner": "Alex Morgan",
+      "status": "Planning",
+      "recentActivity": "Outlined the next round of interviews",
+      "priority": "Medium",
+      "summary": "Turning conversations with our community into clearer product decisions."
+    },
+    {
+      "name": "Signal reliability",
+      "owner": "Riley Kim",
+      "status": "At risk",
+      "recentActivity": "Flagged a dependency for team review",
+      "priority": "Urgent",
+      "summary": "Strengthening the foundations so teams can depend on every notification."
+    }
+  ]
+}
